@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+        <!-- Soft UI CSS -->
+<link href="{{ asset('assets/css/nucleo-icons.css') }}" rel="stylesheet" />
+<link href="{{ asset('assets/css/nucleo-svg.css') }}" rel="stylesheet" />
+<link href="{{ asset('assets/css/soft-ui-dashboard.css') }}" rel="stylesheet" />
+
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -13,6 +18,12 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- Soft UI JS -->
+<script src="{{ asset('assets/js/core/popper.min.js') }}"></script>
+<script src="{{ asset('assets/js/core/bootstrap.min.js') }}"></script>
+<script src="{{ asset('assets/js/soft-ui-dashboard.min.js') }}"></script>
+
+        
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -29,7 +40,7 @@
 
             <!-- Page Content -->
             <main>
-                {{ $slot }}
+               @yield('content')
             </main>
         </div>
     </body>
