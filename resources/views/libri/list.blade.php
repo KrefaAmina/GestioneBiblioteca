@@ -42,37 +42,84 @@
                                                 <td class="align-middle text-sm">
 
                                                     @foreach ($libro->categorie as $categoria)
-                                                        <span
-                                                            class="badge bg-gradient-primary me-1">{{ $categoria->nome }}</span>
+                                                        <a href="{{ route('categorie.libri', $categoria->id) }}">
+                                                            <span class="badge bg-gradient-primary me-1">
+                                                                {{ $categoria->nome }}
+                                                            </span>
+                                                        </a>
                                                     @endforeach
+
                                                 </td>
                                                 <td class="align-middle text-sm">{{ $libro->autore }}</td>
                                                 <td class="align-middle text-sm">{{ $libro->annoPub }}</td>
                                                 <td class="align-middle text-sm">{{ $libro->descrizione }}</td>
-                                                <td class="align-middle text-sm">
 
+                                                <td>
                                                     @if ($libro->copertina)
                                                         <img src="{{ asset('storage/' . $libro->copertina) }}"
-                                                            alt="copertina" width="50">
+                                                            alt="Copertina" style="height: 80px; cursor: pointer;"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#modalCopertina{{ $libro->id }}">
+
+                                                        <!-- Modale -->
+                                                        <div class="modal fade" id="modalCopertina{{ $libro->id }}"
+                                                            tabindex="-1" aria-labelledby="modalLabel{{ $libro->id }}"
+                                                            aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title"
+                                                                            id="modalLabel{{ $libro->id }}">
+                                                                            {{ $libro->titolo }}</h5>
+                                                                        <button type="button" class="btn-close"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="Chiudi"></button>
+                                                                    </div>
+                                                                    <div class="modal-body text-center">
+                                                                        <img src="{{ asset('storage/' . $libro->copertina) }}"
+                                                                            alt="Copertina Grande"
+                                                                            class="img-fluid rounded">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <a href="{{ asset('storage/' . $libro->copertina) }}"
+                                                                            download class="btn btn-primary">
+                                                                            📥 Scarica
+                                                                        </a>
+                                                                        <button type="button" class="btn btn-secondary"
+                                                                            data-bs-dismiss="modal">Chiudi</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     @else
                                                         <span>Nessuna immagine</span>
                                                     @endif
                                                 </td>
+
                                                 <td class="align-middle text-sm">{{ $libro->editor }}</td>
 
+                                                <td class="align-middle d-flex gap-1">
+                                                    <a href="{{ route('libri.show', $libro->id) }}"
+                                                        class="btn btn-sm btn-info">👁️</a>
 
-                                                <td class="align-middle text-sm">{{ $libro->editore }}</td>
-                                                <td class="align-middle">
                                                     <a href="{{ route('libri.edit', $libro) }}"
                                                         class="btn btn-sm btn-warning">✏️</a>
+
                                                     <form action="{{ route('libri.destroy', $libro) }}" method="POST"
                                                         style="display:inline;">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button class="btn btn-sm btn-danger"
-                                                            onclick="return confirm('Sei sicuro?')">🗑️</button>
+                                                        <button type="submit"
+                                                            onclick="return confirm('Sei sicuro di voler eliminare questo libro?')"
+                                                            class="btn btn-danger btn-sm">
+                                                            🗑️
+                                                        </button>
                                                     </form>
+                                                    {{-- ➕ Aggiungi Copia --}}
+                                                    <a href="{{ route('copie.create', $libro->id) }}"
+                                                        class="btn btn-sm btn-success">➕ Copia</a>
                                                 </td>
+
                                             </tr>
                                         @endforeach
                                     </tbody>

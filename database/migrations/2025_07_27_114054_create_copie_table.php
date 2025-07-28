@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categoria_libro', function (Blueprint $table) {
-           $table->id();
-            $table->foreignId('categoria_id')->constrained('categorie')->onDelete('cascade');
+        Schema::create('copie', function (Blueprint $table) {
+            $table->id();
+            $table->string('codice_barre')->unique();
+            $table->enum('stato', ['ottimo', 'buono', 'discreto']);
+            $table->enum('disponibilita', ['disponibile', 'prenotata']);
+            $table->string('note')->nullable();
             $table->foreignId('libro_id')->constrained('libri')->onDelete('cascade');
             $table->timestamps();
         });
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categoria_libro');
+        Schema::dropIfExists('copie');
     }
 };

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('annoPub');
             $table->string('editor')->nullable();
             $table->string('copertina')->nullable();
+
             $table->timestamps();
         });
     }

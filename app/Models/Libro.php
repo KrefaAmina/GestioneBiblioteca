@@ -6,19 +6,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class Libro extends Model
 {
+
+    protected $table = 'libri';
+
     protected $fillable = [
-    'titolo',
-    'isbn',
-    'descrizione',
-    'categoria',
-    'autore',
-    'annoPub',
-    'editor',
-    'copertina'
-];
-public function categorie()
+        'titolo',
+        'isbn',
+        'descrizione',
+        'categoria',
+        'autore',
+        'annoPub',
+        'editor',
+        'copertina'
+    ];
+
+    public function categorie()
+    {
+        return $this->belongsToMany(Categoria::class, 'categoria_libro', 'libro_id', 'categoria_id');
+    }
+
+    public function copie()
 {
-    return $this->belongsToMany(Categoria::class);
+    return $this->hasMany(Copia::class);
 }
 
 }

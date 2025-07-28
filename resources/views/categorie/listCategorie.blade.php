@@ -23,22 +23,29 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($categorias as $cat)
+                                    @forelse ($categorie as $cat)
                                         <tr>
-
-                                            <td class="align-middle"><a href="{{ route('categorie.libri', $cat->id) }}">
-                                                    {{ $cat->nome }}</td></a>
+                                            <td class="align-middle">{{ $cat->nome }}</td>
                                             <td class="align-middle">{{ $cat->descrizione }}</td>
-                                            <td class="align-middle">
+                                            <td class="align-middle d-flex gap-2">
+                                                <a href="{{ route('categorie.libri', $cat->id) }}"
+                                                    class="btn btn-sm btn-info">
+                                                    📖 Lista Libri
+                                                </a>
+
                                                 <a href="{{ route('categorie.editCategoria', $cat) }}"
-                                                    class="btn btn-sm btn-warning">✏️ Modifica</a>
+                                                    class="btn btn-sm btn-warning">
+                                                    ✏️
+                                                </a>
+
                                                 <form action="{{ route('categorie.destroyCategoria', $cat) }}"
                                                     method="POST" style="display:inline;">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('Sei sicuro di voler eliminare questa categoria?')">🗑️
-                                                        Elimina</button>
+                                                        onclick="return confirm('Sei sicuro di voler eliminare questa categoria?')">
+                                                        🗑️
+                                                    </button>
                                                 </form>
                                             </td>
                                         </tr>
@@ -47,10 +54,11 @@
                                             <td colspan="3" class="text-center">Nessuna categoria trovata.</td>
                                         </tr>
                                     @endforelse
+
                                 </tbody>
                             </table>
                             <div class="d-flex justify-content-center mt-3">
-                                {{ $categorias->links('pagination::bootstrap-5') }}
+                                {{ $categorie->links('pagination::bootstrap-5') }}
                             </div>
                         </div>
                     </div>

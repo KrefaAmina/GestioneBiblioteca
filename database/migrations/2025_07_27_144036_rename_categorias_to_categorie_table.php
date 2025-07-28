@@ -11,19 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categorias', function (Blueprint $table) {
-            $table->id();
-            $table->string('nome');      
-            $table->text('descrizione')->nullable();
-            $table->timestamps();
-        });
+        Schema::rename('categorias', 'categorie');
     }
 
     /**
      * Reverse the migrations.
      */
+
     public function down(): void
     {
-        Schema::dropIfExists('categorias');
+        Schema::rename('categorie', 'categorias');
     }
+    
+   
 };

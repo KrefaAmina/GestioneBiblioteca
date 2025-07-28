@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categorias', function (Blueprint $table) {
-            $table->id();
-            $table->string('nome');      
-            $table->text('descrizione')->nullable();
-            $table->timestamps();
-        });
+
+        Schema::rename('libros', 'libri');
     }
 
     /**
@@ -24,6 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categorias');
+        Schema::rename('libri', 'libros');
     }
 };

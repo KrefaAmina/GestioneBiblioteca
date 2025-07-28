@@ -13,8 +13,8 @@ class CategoriaController extends Controller
      */
     public function index()
     {
-        $categorias = Categoria::paginate(10);
-        return view('categorie.listCategorie', compact('categorias'));
+        $categorie = Categoria::paginate(10);
+        return view('categorie.listCategorie', compact('categorie'));
     }
 
     /**
@@ -80,11 +80,18 @@ class CategoriaController extends Controller
     }
 
     public function showLibri(Categoria $categoria)
-{
-   
-    $libri = $categoria->libri()->paginate(10);
+    {
 
-    return view('categorie.libri', compact('categoria', 'libri'));
-}
+        $libri = $categoria->libri()->paginate(10);
 
+        return view('categorie.libri', compact('categoria', 'libri'));
+    }
+    public function libri($id)
+    {
+        $categoria = Categoria::with('libri')->findOrFail($id);
+        return view('categorie.libri', [
+            'categoria' => $categoria,
+            'libri' => $categoria->libri,
+        ]);
+    }
 }
