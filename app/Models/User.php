@@ -20,6 +20,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'ruole',
+        'indirizzo',
         'password',
     ];
 
@@ -45,4 +47,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function isAdmin(): bool
+{
+    return $this->ruole === 'admin';
+}
+
+
+    public function prenotazioni()
+{
+    return $this->hasMany(\App\Models\Prenotazione::class);
+}
 }

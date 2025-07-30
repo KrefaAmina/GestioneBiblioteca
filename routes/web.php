@@ -21,9 +21,15 @@ Route::get('/barcode/{code}', function ($code) {
 })->name('barcode.generate');
 
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+/**
+ * Route::get('/dashboard', function () {
+ *  return view('dashboard');
+ * })->middleware(['auth', 'verified'])->name('dashboard');
+*/
+
+Route::middleware(['auth', 'is_admin'])->group(function () {
+    Route::get('/admin/prenotazioni', [PrenotazioneController::class, 'indexAdmin'])->name('prenotazioni.admin');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -48,16 +54,34 @@ Route::middleware('auth')->group(function () {
         Route::get('copie', [CopiaController::class, 'index'])->name('copie.index');
         Route::get('copie/create', [CopiaController::class, 'create'])->name('copie.create');
         Route::post('copie', [CopiaController::class, 'store'])->name('copie.store');
+       
+        Route::get('copie/disponibili', [CopiaController::class, 'listaDisponibili'])->name('copie.listaDisponibili');
+
     });
     //Percorsi non nidificati per mostrare, modificare, eliminare o copiare
+    Route::get('copie/{id}', [CopiaController::class, 'show'])->name('copie.show');
+    Route::post('/copie/disponibili', [CopiaController::class, 'disponibiliAjax'])->name('copie.disponibili');
+
     Route::get('copie/{copia}', [CopiaController::class, 'show'])->name('copie.show');
     Route::get('copie/{copia}/edit', [CopiaController::class, 'edit'])->name('copie.edit');
     Route::put('copie/{copia}', [CopiaController::class, 'update'])->name('copie.update');
     Route::delete('copie/{copia}', [CopiaController::class, 'destroy'])->name('copie.destroy');
 
-    Route::resource('prenotazioni', PrenotazioneController::class);
+   
+    Route::get('/prenotazioni/create', [PrenotazioneController::class, 'create'])->name('prenotazioni.create');
+    Route::get('/prenotazioni/utente', [PrenotazioneController::class, 'userList'])->name('prenotazioni.user_list');
+    Route::post('/prenotazioni', [PrenotazioneController::class, 'store'])->name('prenotazioni.store');
+    Route::get('/prenotazioni/store-and-redirect', [PrenotazioneController::class, 'storeAndRedirect'])
+     ->name('prenotazioni.storeAndRedirect');
 
+    
 });
+
+
+    
+
+
+
 
 
 

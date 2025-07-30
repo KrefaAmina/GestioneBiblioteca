@@ -5,18 +5,59 @@ namespace App\Http\Controllers;
 use App\Models\Categoria;
 use App\Models\Libro;
 use Illuminate\Http\Request;
+use App\Enums\Disponibilita;
 
 class LibroController extends Controller
 {
-    /**
-     * Display a listing of the resource.
+     /**
+     * Mostra la lista dei libri con possibilità di ricerca e filtri.
      */
-    public function index()
-    {
-        $libri = Libro::with('categorie')->paginate(10);
+    public function index(Request $request)
+{
+    // Recupero tutte le categorie per la select
+    $categorie = Categoria::all();
 
-        return view('libri.list', compact('libri'));
+    // Query base con relazione categorie e copie
+    $query = Libro::with(['categorie', 'copie']);
+
+    // Ricerca testuale (titolo, autore, isbn, descrizione)
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('titolo', 'like', "%{$search}%")
+              ->orWhere('autore', 'like', "%{$search}%")
+              ->orWhere('isbn', 'like', "%{$search}%")
+              ->orWhere('descrizione', 'like', "%{$search}%");
+        });
     }
+
+    // Filtro categoria
+    if ($request->filled('categoria')) {
+        $query->whereHas('categorie', function ($q) use ($request) {
+            $q->where('categorie.id', $request->categoria);
+        });
+    }
+
+   // Filtro disponibilità (dalla tabella copie)
+if ($request->filled('disponibilita')) {
+    $disponibilita = Disponibilita::tryFrom($request->disponibilita);
+    if ($disponibilita) {
+        $query->whereHas('copie', function ($q) use ($disponibilita) {
+            $q->where('disponibilita', $disponibilita->value);
+        });
+    }
+}
+
+    // Filtro anno pubblicazione
+    if ($request->filled('anno')) {
+        $query->where('annoPub', $request->anno);
+    }
+
+    // Paginazione con 10 risultati
+    $libri = $query->paginate(10)->withQueryString();
+
+    return view('libri.list', compact('libri', 'categorie'));
+}
 
     /**
      * Store a newly created resource in storage.
@@ -62,8 +103,18 @@ class LibroController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Libro $libro)
+   public function show(Request $request, Libro $libro)
 {
+    // Se ci sono i parametri dateinizio e datefino nella query, redirige alla lista copie disponibili
+    if ($request->has(['dateinizio', 'datefino'])) {
+        return redirect()->route('copie.listaDisponibili', [
+            'libro' => $libro->id,
+            'dateinizio' => $request->dateinizio,
+            'datefino' => $request->datefino,
+        ]);
+    }
+
+    // Altrimenti mostra la pagina normale del libro
     return view('libri.show', compact('libro'));
 }
 

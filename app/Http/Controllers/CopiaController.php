@@ -5,60 +5,135 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Copia;
 use App\Models\Libro;
+use App\Enums\Disponibilita;
 
 class CopiaController extends Controller
 {
     /**
-     * Display a listing of the copia.
+     * Metodo AJAX per restituire le copie disponibili per un libro
+     * nel periodo selezionato, escludendo le copie già prenotate.
+     * Usato nella modale con fetch() JS.
      */
-    public function index(Libro $libro)
-    {
-        $copie = $libro->copie()->paginate(10);
-        return view('copie.index', compact('copie', 'libro'));
-    }
+   public function disponibiliAjax(Request $request)
+{
+    // Validazione con nomi aggiornati
+    $request->validate([
+        'libro_id' => 'required|exists:libri,id',
+        'dateinizio' => 'required|date',
+        'datefino' => 'required|date|after_or_equal:dateinizio',
+    ]);
+
+    $copie = Copia::where('libro_id', $request->libro_id)
+        ->where('disponibilita', Disponibilita::Disponibile)
+        ->whereNotIn('id', function ($query) use ($request) {
+            $query->select('copia_id')
+                ->from('prenotazioni')
+                ->where(function ($q) use ($request) {
+                    $q->whereBetween('dateinizio', [$request->dateinizio, $request->datefino])
+                      ->orWhereBetween('datefino', [$request->dateinizio, $request->datefino])
+                      ->orWhere(function ($q2) use ($request) {
+                          $q2->where('dateinizio', '<=', $request->dateinizio)
+                             ->where('datefino', '>=', $request->datefino);
+                      });
+                });
+        })
+        ->orderByRaw("FIELD(stato, 'ottimo', 'buono', 'discreto')")
+        ->get(['id', 'codice_barre', 'stato']);
+
+    return response()->json($copie);
+}
 
 
     /**
-     * Mostra il form per creare una nuova copia di un libro specifico
+     * Mostra la lista delle copie di un libro ordinate per stato.
      */
+    public function index(Libro $libro)
+    {
+        $copie = Copia::where('libro_id', $libro->id)
+            ->orderByRaw("FIELD(stato, 'ottimo', 'buono', 'discreto')")
+            ->paginate(10);
 
+        return view('copie.index', compact('libro', 'copie'));
+    }
+
+    /**
+     * Versione "pagina intera" per mostrare le copie disponibili 
+     * in un certo periodo. 
+     */
+ public function listaDisponibili(Request $request, Libro $libro)
+{
+    // Validazione dei parametri, usa dateinizio e datefino
+    $request->validate([
+        'dateinizio' => 'required|date',
+        'datefino' => 'required|date|after_or_equal:dateinizio',
+    ]);
+
+    $copie = Copia::where('libro_id', $libro->id)
+        ->where('disponibilita', 'disponibile')
+        ->whereDoesntHave('prenotazioni', function ($q) use ($request) {
+            $q->where(function ($query) use ($request) {
+                $query->whereBetween('dateinizio', [$request->dateinizio, $request->datefino])
+                      ->orWhereBetween('datefino', [$request->dateinizio, $request->datefino])
+                      ->orWhere(function ($q2) use ($request) {
+                          $q2->where('dateinizio', '<=', $request->dateinizio)
+                             ->where('datefino', '>=', $request->datefino);
+                      });
+            });
+        })
+        ->orderByRaw("FIELD(stato, 'ottimo', 'buono', 'discreto')")
+        ->get();
+
+    // Restituisce la vista con le copie disponibili e i parametri per mostrare le date nel form
+    return view('copie.disponibili', [
+        'copie' => $copie,
+        'dateinizio' => $request->dateinizio,
+        'datefino' => $request->datefino,
+        'libro' => $libro
+    ]);
+}
+
+
+    /**
+     * Mostra il form per creare una nuova copia per un libro specifico.
+     */
     public function create($libroId)
     {
         $libro = Libro::findOrFail($libroId);
         return view('copie.create', compact('libro'));
     }
 
-
     /**
-     * Salva la nuova copia nel database collegata al libro
+     * Salva una nuova copia nel database associata a un libro.
      */
-
     public function store(Request $request, Libro $libro)
     {
-        // Validazione dei dati
         $validated = $request->validate([
             'stato' => 'required|in:ottimo,buono,discreto',
-
             'note' => 'nullable|string',
         ]);
 
-        // Generazione automatica di un codice a barre univoco
-        $validated['codice_barre'] = uniqid(); // oppure usare Str::uuid() per una versione più lunga
+        $validated['codice_barre'] = uniqid(); // Generazione codice a barre unico
+        $validated['disponibilita'] = 'disponibile'; // Stato predefinito
 
-        $validated['disponibilita'] = 'disponibile'; // valore predefinito
-
-        // Creazione della copia e associazione al libro
         $libro->copie()->create($validated);
 
-        // Reindirizzamento alla lista delle copie del libro
         return redirect()
             ->route('copie.index', $libro->id)
             ->with('success', '📦 Copia creata con successo.');
     }
 
+    /**
+     * Mostra i dettagli di una copia specifica.
+     */
+    public function show($id)
+    {
+        $copia = Copia::with('libro')->findOrFail($id);
+
+        return view('copie.show', compact('copia'));
+    }
 
     /**
-     * Show the form for editing the specified resource.
+     * Mostra il form di modifica per una copia (non ancora implementato).
      */
     public function edit(string $id)
     {
@@ -66,7 +141,7 @@ class CopiaController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Aggiorna una copia esistente (non ancora implementato).
      */
     public function update(Request $request, string $id)
     {
@@ -74,7 +149,7 @@ class CopiaController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Elimina una copia dal sistema (non ancora implementato).
      */
     public function destroy(string $id)
     {

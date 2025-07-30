@@ -1,47 +1,75 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<!DOCTYPE html>
+<html lang="it">
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Biblioteca</title>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+    <link rel="stylesheet" href="{{ asset('assets/css/nucleo-icons.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/nucleo-svg.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/soft-ui-dashboard.css') }}">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body class="bg-gray-100">
+
+    <div class="container my-5">
+        <div class="row">
+            <!-- Formulaire à gauche -->
+            <div class="col-md-6 d-flex flex-column justify-content-center">
+                <div class="card shadow-lg">
+                    <div class="card-body px-5 py-4">
+                        <h4 class="mb-4 text-center">📚 Accesso alla Biblioteca</h4>
+
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('login') }}">
+                            @csrf
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" name="email" id="email" value="{{ old('email') }}"
+                                    class="form-control @error('email') is-invalid @enderror" required autofocus>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" name="password" id="password"
+                                    class="form-control @error('password') is-invalid @enderror" required>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" name="remember" id="remember" class="form-check-input">
+                                <label class="form-check-label" for="remember">Ricordami</label>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Accedi</button>
+                            </div>
+                        </form>
+                        <div class="mt-3 text-center">
+                            <a href="{{ route('register') }}">Non hai un account? Registrati</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image à droite -->
+            <div class="col-md-6 d-none d-md-block">
+                <img src="{{ asset('storage/bib.jfif') }}" alt="Biblioteca" class="img-fluid rounded shadow">
+            </div>
         </div>
+    </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+</body>
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+</html>

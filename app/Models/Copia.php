@@ -35,7 +35,14 @@ class Copia extends Model
     {
         return $this->belongsTo(Libro::class);
     }
+    /**
+     * Relazione con il modello prenotazione (una copia appartiene a many prenotazioni)
+     */
 
+     public function prenotazioni()
+    {
+        return $this->hasMany(Prenotazione::class, 'copia_id');
+    }
 
     /**
      * Metodo boot() per registrare eventi sul modello.
