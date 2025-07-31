@@ -51,10 +51,10 @@ Route::middleware('auth')->group(function () {
 
     //Percorsi nidificati: copia appartenente a un libro
     Route::prefix('libri/{libro}')->group(function () {
-        Route::get('copie', [CopiaController::class, 'index'])->name('copie.index');
+        
         Route::get('copie/create', [CopiaController::class, 'create'])->name('copie.create');
         Route::post('copie', [CopiaController::class, 'store'])->name('copie.store');
-       
+        Route::get('copie', [CopiaController::class, 'index'])->name('copie.index');
         Route::get('copie/disponibili', [CopiaController::class, 'listaDisponibili'])->name('copie.listaDisponibili');
 
     });
@@ -73,6 +73,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/prenotazioni', [PrenotazioneController::class, 'store'])->name('prenotazioni.store');
     Route::get('/prenotazioni/store-and-redirect', [PrenotazioneController::class, 'storeAndRedirect'])
      ->name('prenotazioni.storeAndRedirect');
+      Route::get('/prenotazioni', [PrenotazioneController::class, 'index'])->name('prenotazioni.index');
 
     
 });

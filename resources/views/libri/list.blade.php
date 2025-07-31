@@ -10,7 +10,11 @@
                 <div class="card mb-4">
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">📘 Lista dei Libri</h6>
-                        <a href="{{ route('libri.create') }}" class="btn btn-sm btn-primary">➕ Aggiungi Libro</a>
+                        @auth
+                            @if (Auth::user()->isAdmin())
+                                <a href="{{ route('libri.create') }}" class="btn btn-sm btn-primary">➕ Aggiungi Libro</a>
+                            @endif
+                        @endauth
                     </div>
 
                     <div class="card-body px-0 pt-0 pb-2">
@@ -21,10 +25,39 @@
 
                                     <!-- En-têtes -->
                                     <tr>
+
                                         <th>Titolo</th>
                                         <th>Autore</th>
-                                        <th>Categoria</th>
-                                        <th>Anno</th>
+                                        <!-- Filtre interactif -->
+                                        <th>
+                                            <select id="categoriaFilter" class="form-control form-control-sm"
+                                                style="min-width: 80px;">
+
+                                                <option value="">Categoria</option>
+                                                @foreach ($categorie as $cat)
+                                                    <option
+                                                        value="{{ route('libri.index', array_merge(request()->except('page', 'categoria'), ['categoria' => $cat->id])) }}"
+                                                        {{ request('categoria') == $cat->id ? 'selected' : '' }}>
+                                                        {{ $cat->nome }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </th>
+
+                                        <th>
+                                            <select id="annoFilter" class="form-control form-control-sm"
+                                                style="min-width: 80px;">
+                                                <option value="">Anno</option>
+                                                @foreach ($anniDisponibili as $anno)
+                                                    <option
+                                                        value="{{ route('libri.index', array_merge(request()->except('page', 'anno'), ['anno' => $anno])) }}"
+                                                        {{ request('anno') == $anno ? 'selected' : '' }}>
+                                                        {{ $anno }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </th>
+
                                         <th>Copertina</th>
                                         <th>Editore</th>
                                         <th>Azioni</th>
@@ -67,6 +100,9 @@
                                                         <!-- Bouton Ajouter Copia -->
                                                         <a href="{{ route('copie.create', ['libro' => $libro->id]) }}"
                                                             class="btn btn-sm btn-success">➕ Copia</a>
+                                                        <!-- Bouton Lista Copie -->
+                                                        <a href="{{ route('copie.index', ['libro' => $libro->id]) }}"
+                                                            class="btn btn-sm btn-primary">📋 Copie</a>
 
                                                         <!-- Formulaire Supprimer -->
                                                         <form action="{{ route('libri.destroy', $libro->id) }}" method="POST"
@@ -98,4 +134,16 @@
             </div>
         </div>
     </div>
+    @push('scripts')
+        <script>
+            document.getElementById('categoriaFilter')?.addEventListener('change', function() {
+                if (this.value) window.location.href = this.value;
+            });
+
+            document.getElementById('annoFilter')?.addEventListener('change', function() {
+                if (this.value) window.location.href = this.value;
+            });
+        </script>
+    @endpush
+
 @endsection

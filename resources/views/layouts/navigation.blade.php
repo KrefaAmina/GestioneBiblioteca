@@ -15,7 +15,15 @@
 
         <!-- Utilisateur connecté -->
         @auth
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto d-flex align-items-center">
+                @if (Auth::user()->isAdmin())
+                    <li class="nav-item me-3">
+                        <a href="{{ route('prenotazioni.index') }}" class="btn btn-primary">
+                            📋 Lista Prenotazioni
+                        </a>
+                    </li>
+                @endif
+
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
                         role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -37,5 +45,6 @@
                 </li>
             </ul>
         @endauth
+
     </div>
 </nav>

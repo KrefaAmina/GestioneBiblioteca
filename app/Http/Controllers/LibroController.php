@@ -12,15 +12,15 @@ class LibroController extends Controller
      /**
      * Mostra la lista dei libri con possibilità di ricerca e filtri.
      */
-    public function index(Request $request)
+ public function index(Request $request)
 {
-    // Recupero tutte le categorie per la select
     $categorie = Categoria::all();
+    $anniDisponibili = Libro::select('annoPub')->distinct()->orderBy('annoPub', 'desc')->pluck('annoPub');
 
-    // Query base con relazione categorie e copie
+    // Inizializza la query base con relazioni
     $query = Libro::with(['categorie', 'copie']);
 
-    // Ricerca testuale (titolo, autore, isbn, descrizione)
+    // Filtro di ricerca testuale
     if ($request->filled('search')) {
         $search = $request->search;
         $query->where(function ($q) use ($search) {
@@ -31,33 +31,40 @@ class LibroController extends Controller
         });
     }
 
-    // Filtro categoria
+    // Filtro per categoria
     if ($request->filled('categoria')) {
         $query->whereHas('categorie', function ($q) use ($request) {
             $q->where('categorie.id', $request->categoria);
         });
     }
 
-   // Filtro disponibilità (dalla tabella copie)
-if ($request->filled('disponibilita')) {
-    $disponibilita = Disponibilita::tryFrom($request->disponibilita);
-    if ($disponibilita) {
-        $query->whereHas('copie', function ($q) use ($disponibilita) {
-            $q->where('disponibilita', $disponibilita->value);
-        });
+    // Filtro per disponibilità (se richiesto)
+    if ($request->filled('disponibilita')) {
+        $disponibilita = Disponibilita::tryFrom($request->disponibilita);
+        if ($disponibilita) {
+            $query->whereHas('copie', function ($q) use ($disponibilita) {
+                $q->where('disponibilita', $disponibilita->value);
+            });
+        }
     }
-}
 
-    // Filtro anno pubblicazione
+    // Filtro per anno
     if ($request->filled('anno')) {
         $query->where('annoPub', $request->anno);
     }
 
-    // Paginazione con 10 risultati
+    // 🛑 FILTRO AGGIUNTIVO PER UTENTI
+    if (auth()->user()?->ruolo === 'utente') {
+        $query->whereHas('copie', function ($q) {
+            $q->where('disponibilita', \App\Enums\Disponibilita::Disponibile->value);
+        });
+    }
+
     $libri = $query->paginate(10)->withQueryString();
 
-    return view('libri.list', compact('libri', 'categorie'));
+    return view('libri.list', compact('libri', 'categorie', 'anniDisponibili'));
 }
+
 
     /**
      * Store a newly created resource in storage.

@@ -45,12 +45,11 @@
                 @enderror
             </div>
 
-
-
             <button type="submit" class="btn btn-primary">📅 Prenota</button>
         </form>
+
         @if ($errors->any())
-            <div class="alert alert-danger">
+            <div class="alert alert-danger mt-3">
                 <ul class="mb-0">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -59,4 +58,30 @@
             </div>
         @endif
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const dateinizio = document.getElementById("dateinizio");
+            const datefino = document.getElementById("datefino");
+
+            if (dateinizio && datefino) {
+                const today = new Date().toISOString().split("T")[0];
+
+                //Non consentire date passate per entrambi i campi
+                dateinizio.setAttribute("min", today);
+                datefino.setAttribute("min", today);
+
+                // Quando cambia la data di inizio, aggiorna la data di fine minima
+                dateinizio.addEventListener("change", function() {
+                    // Reimposta datefino se è precedente a dateinizio
+                    if (datefino.value && datefino.value < this.value) {
+                        datefino.value = "";
+                    }
+                    datefino.setAttribute("min", this.value);
+                });
+            }
+        });
+    </script>
 @endsection

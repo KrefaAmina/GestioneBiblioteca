@@ -49,6 +49,8 @@
     {{-- Inserisci qui gli script specifici delle viste --}}
     @yield('scripts')
 
+    @stack('scripts')
+
 </body>
 
 </html>

@@ -2,50 +2,86 @@
 
 @section('content')
     <div class="container py-4">
-        <h2 class="mb-4">📄 Copie del libro: <strong>{{ $libro->titolo }}</strong></h2>
+        <h2 class="mb-4 text-primary">
+            📚 Copie disponibili per: <span class="fw-bold">{{ $libro->titolo }}</span>
+        </h2>
 
-        <a href="{{ route('libri.show', $libro) }}" class="btn btn-secondary mb-3">← Torna al libro</a>
-
-        @if ($copie->count())
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Codice a Barre</th>
-                            <th>Stato</th>
-                            <th>Disponibilita</th>
-                            <th>Note</th>
-                            <th>Azioni</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($copie as $copia)
+        @if ($copie->isEmpty())
+            <div class="alert alert-warning shadow rounded p-3">❌ Nessuna copia disponibile.</div>
+        @else
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
                             <tr>
-                                <td>
-                                    <img src="{{ route('barcode.generate', $copia->codice_barre) }}" alt="Barcode"
-                                        style="height: 12px;">
-                                    <div>{{ $copia->codice_barre }}</div>
-                                </td>
-                                <td>{{ ucfirst($copia->stato->value) }}</td>
-                                <td>{{ ucfirst($copia->disponibilita->value) }}</td>
-                                <td>{{ $copia->note }}</td>
-                                <td>
-                                    <a href="{{ route('copie.show', $copia) }}" class="btn btn-sm btn-info">👁️
-                                        Visualizza</a>
-                                    <a href="{{ route('prenotazioni.create', ['copia_id' => $copia->id]) }}"
-                                        class="btn btn-sm btn-success">📅 Prenotare</a>
-                                </td>
+                                <th>Codice a Barre</th>
+                                <th>Stato</th>
+                                <th>Disponibilità</th>
+                                <th>Azioni</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach ($copie as $copia)
+                                <tr>
+                                    <td>
+                                        <img src="https://barcode.tec-it.com/barcode.ashx?data={{ $copia->codice_barre }}&code=Code128"
+                                            alt="Barcode" class="img-fluid rounded shadow-sm" width="150">
+                                    </td>
 
-                <div class="d-flex justify-content-center mt-4">
-                    {{ $copie->links('pagination::bootstrap-5') }}
+                                    <td>
+                                        @php
+                                            $stato = strtolower($copia->stato->value ?? $copia->stato);
+                                            $color = match ($stato) {
+                                                'ottimo' => 'success',
+                                                'buono' => 'warning',
+                                                'discreto' => 'secondary',
+                                                default => 'light',
+                                            };
+                                        @endphp
+                                        <span
+                                            class="badge bg-{{ $color }} px-3 py-2 rounded-pill shadow-sm text-capitalize">
+                                            {{ $stato }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @php
+                                            $disponibilita = strtolower(
+                                                $copia->disponibilita->value ?? $copia->disponibilita,
+                                            );
+                                            $colorDisponibilita =
+                                                $disponibilita === 'disponibile' ? 'success' : 'danger';
+                                        @endphp
+                                        <span
+                                            class="badge bg-{{ $colorDisponibilita }} px-3 py-2 rounded-pill shadow-sm text-capitalize">
+                                            {{ $disponibilita }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <a href="{{ route('prenotazioni.create', ['copia_id' => $copia->id]) }}"
+                                            class="btn btn-sm btn-success
+                                                @if ($disponibilita !== 'disponibile') disabled @endif"
+                                            @if ($disponibilita !== 'disponibile') aria-disabled="true" tabindex="-1" @endif>
+                                            📅 Prenotare
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+                    <div class="mt-3">
+                        {{ $copie->links('pagination::bootstrap-5') }}
+                    </div>
                 </div>
             </div>
-        @else
-            <p class="text-muted">📭 Nessuna copia disponibile per questo libro.</p>
         @endif
+
+        <div class="mt-4">
+            <a href="{{ route('libri.index') }}" class="btn btn-outline-primary rounded-pill px-4 shadow-sm">
+                ← Torna alla lista libri
+            </a>
+        </div>
     </div>
 @endsection

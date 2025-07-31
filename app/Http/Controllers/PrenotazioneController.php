@@ -5,16 +5,34 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Copia;
 use App\Models\Prenotazione;
+use Carbon\Carbon;
 
 class PrenotazioneController extends Controller
 {
+    
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        //
-    }
+    
+
+public function index()
+{
+    // Ottieni la data di oggi senza orario
+    $oggi = Carbon::today();
+
+    // Recupera le prenotazioni con le relazioni utente e copia/libro caricate
+    // Ordina in base alla distanza assoluta (in giorni) tra 'dateinizio' e oggi
+    // In questo modo le prenotazioni con la data di inizio più vicina a oggi sono in cima
+    $prenotazioni = Prenotazione::with(['user', 'copia.libro'])
+        ->orderByRaw("ABS(DATEDIFF(dateinizio, ?)) ASC", [$oggi->toDateString()])
+        ->paginate(10);
+
+    // Ritorna la vista con la lista paginata delle prenotazioni ordinate
+    return view('prenotazioni.index', compact('prenotazioni'));
+}
+
+
+    
   public function indexAdmin(Request $request)
 {
     // Prendi i parametri di ordinamento dalla query (con valori di default)
@@ -64,24 +82,21 @@ public function storeAndRedirect(Request $request)
     /**
      * Mostra il form per creare una nuova prenotazione.
      */
-    public function create(Request $request)
-    
+    public function create(Request $request)    
     {
         // Se viene passato un id_copia (es. dalla lista copie)
         $copiaId = $request->query('copia_id');
 
         // Trova la copia o null
         $copia = $copiaId ? Copia::find($copiaId) : null;
-
-        
-        
+                
         return view('prenotazioni.create', compact('copia'));
     }
 
     /**
      * Salva la nuova prenotazione nel database
      */
-    public function store(Request $request)
+   public function store(Request $request)
 {
     // Valida i dati inviati dal form
     $validated = $request->validate([
@@ -98,22 +113,25 @@ public function storeAndRedirect(Request $request)
         // Crea la prenotazione per l'utente autenticato
         $prenotazione = auth()->user()->prenotazioni()->create($validated);
 
+        // Aggiorna la disponibilità della copia a 'prenotata'
+        $copia->disponibilita = 'prenotata';
+        $copia->save();
+
         // Reindirizza alla lista delle prenotazioni dell’utente con messaggio di successo
         return redirect()->route('prenotazioni.user_list')
             ->with('success', 'Prenotazione creata con successo!');
     } catch (\Exception $e) {
         // In caso di errore, torna indietro con messaggio di errore
-        return back()->withErrors('Errore nella creazione della prenotazione. Riprova.'. $e->getMessage());
+        return back()->withErrors('Errore nella creazione della prenotazione. Riprova. ' . $e->getMessage());
     }
 }
 
-
 public function userList()
 {
-    /** @var \App\Models\User $user */
-    $prenotazioni = auth()->user()
+        /** @var \App\Models\User $user */
+$prenotazioni = auth()->user()
         ->prenotazioni()
-        ->with('copia.libro')   // Important pour afficher le titolo du libro sans requêtes supplémentaires
+        ->with('copia.libro')   //È importante visualizzare il titolo del libro senza requisiti aggiuntivi
         ->orderBy('dateinizio', 'desc')
         ->paginate(10);
 

@@ -29,5 +29,9 @@ class Libro extends Model
 {
     return $this->hasMany(Copia::class);
 }
+public function copieDisponibili()
+{
+    return $this->hasMany(Copia::class)->where('disponibilita', 'disponibile');
+}
 
 }
