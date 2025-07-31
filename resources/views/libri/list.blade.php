@@ -13,6 +13,9 @@
                         @auth
                             @if (Auth::user()->isAdmin())
                                 <a href="{{ route('libri.create') }}" class="btn btn-sm btn-primary">➕ Aggiungi Libro</a>
+                                <a href="{{ route('categorie') }}" class="btn btn-sm btn-warning">
+                                    Categorie
+                                </a>
                             @endif
                         @endauth
                     </div>
